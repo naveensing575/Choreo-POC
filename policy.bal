@@ -50,7 +50,7 @@ public function userTodosOut(mediation:Context ctx, http:Request req, http:Respo
     json responsePayload = {"user": userJson, "todos": todosJson};
 
     // Respond with combined data
-    check res.setJsonPayload(responsePayload);
+    res.setJsonPayload(responsePayload);
     return res;
 }
 
