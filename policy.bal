@@ -1,62 +1,40 @@
 import ballerina/http;
 import ballerina/log;
-import choreo/mediation;
 
-@mediation:RequestFlow
-public function userTodosIn(mediation:Context ctx, http:Request req, string name, string value)
-        returns http:Response|false|error|() {
-    // Extract userId from query parameters
-    string? userId = req.getQueryParamValue("userId");
-    if userId is () {
-        return error("Missing userId parameter");
+service /userTodos on new http:Listener(8090) {  // ✅ Fix: Corrected listener attachment
+    resource function get .(http:Caller caller, http:Request req) returns error? {
+        // Extract userId from query parameters
+        string? userId = req.getQueryParamValue("userId");
+        if userId is () {
+            log:printError("Missing userId parameter");
+            return caller->respond({"error": "Missing userId parameter"});
+        }
+
+        // Define external API endpoints
+        string userApiUrl = "https://jsonplaceholder.typicode.com/users/" + userId;
+        string todosApiUrl = "https://jsonplaceholder.typicode.com/todos?userId=" + userId;
+
+        // Fetch user details
+        http:Client userClient = check new ("https://jsonplaceholder.typicode.com");
+        http:Response|error userResponse = userClient->get("/users/" + userId);
+        if userResponse is error {
+            log:printError("Failed to fetch user data", 'error = userResponse);
+            return caller->respond({"error": "Failed to fetch user data"});
+        }
+        json userJson = check userResponse.getJsonPayload();
+
+        // Fetch user todos
+        http:Response|error todosResponse = userClient->get("/todos?userId=" + userId);
+        if todosResponse is error {
+            log:printError("Failed to fetch todos data", 'error = todosResponse);
+            return caller->respond({"error": "Failed to fetch todos data"});
+        }
+        json todosJson = check todosResponse.getJsonPayload();
+
+        // Combine user and todos data
+        json responsePayload = {"user": userJson, "todos": todosJson};
+
+        // ✅ Fix: Return correct JSON response
+        check caller->respond(responsePayload);
     }
-    return (); // Continue processing
-}
-
-@mediation:ResponseFlow
-public function userTodosOut(mediation:Context ctx, http:Request req, http:Response res, string name, string value)
-        returns http:Response|false|error|() {
-    // Extract userId from query parameters
-    string? userId = req.getQueryParamValue("userId");
-    if userId is () {
-        return error("Missing userId parameter");
-    }
-
-    // Define endpoints
-    string userApiUrl = "https://jsonplaceholder.typicode.com/users/" + userId;
-    string todosApiUrl = "https://jsonplaceholder.typicode.com/todos?userId=" + userId;
-
-    // Create HTTP clients for the APIs
-    http:Client userClient = check new (userApiUrl);
-    http:Client todosClient = check new (todosApiUrl);
-
-    // Fetch user details
-    http:Response|error userResponse = userClient->get("");
-    if userResponse is error {
-        log:printError("Failed to fetch user data", 'error = userResponse);
-        return error("Failed to fetch user data");
-    }
-    json userJson = check userResponse.getJsonPayload();
-
-    // Fetch user todos
-    http:Response|error todosResponse = todosClient->get("");
-    if todosResponse is error {
-        log:printError("Failed to fetch todos data", 'error = todosResponse);
-        return error("Failed to fetch todos data");
-    }
-    json todosJson = check todosResponse.getJsonPayload();
-
-    // Combine user and todos data
-    json responsePayload = {"user": userJson, "todos": todosJson};
-
-    // Respond with combined data
-    res.setJsonPayload(responsePayload);
-    return res;
-}
-
-@mediation:FaultFlow
-public function userTodosFault(mediation:Context ctx, http:Request req, http:Response? res, http:Response errFlowRes,
-        error e, string name, string value) returns http:Response|false|error|() {
-    log:printError("Error in mediation flow", 'error = e);
-    return errFlowRes;
 }
