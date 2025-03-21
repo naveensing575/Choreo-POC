@@ -1,7 +1,7 @@
 import ballerina/http;
 import ballerina/log;
 
-service /userTodos on new http:Listener(8090) {  // ✅ Fix: Corrected listener attachment
+service /userTodos on new http:Listener(8090) { 
     resource function get .(http:Caller caller, http:Request req) returns error? {
         // Extract userId from query parameters
         string? userId = req.getQueryParamValue("userId");
@@ -34,7 +34,6 @@ service /userTodos on new http:Listener(8090) {  // ✅ Fix: Corrected listener 
         // Combine user and todos data
         json responsePayload = {"user": userJson, "todos": todosJson};
 
-        // ✅ Fix: Return correct JSON response
         check caller->respond(responsePayload);
     }
 }
