@@ -317,7 +317,7 @@ modules = [
 
 [[package]]
 org = "itelasoftdevelopment"
-name = "poc"
+name = "user_todos_policy"
 version = "1.0.0"
 dependencies = [
 	{org = "ballerina", name = "http"},
@@ -326,6 +326,6 @@ dependencies = [
 	{org = "choreo", name = "mediation"}
 ]
 modules = [
-	{org = "itelasoftdevelopment", packageName = "poc", moduleName = "poc"}
+	{org = "itelasoftdevelopment", packageName = "user_todos_policy", moduleName = "user_todos_policy"}
 ]
 

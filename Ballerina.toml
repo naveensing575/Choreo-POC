@@ -1,8 +1,8 @@
 [package]
 org = "itelasoftdevelopment"
-name = "poc"
+name = "user_todos_policy"
 version = "1.0.0"
-distribution = "2201.12.2"
+distribution = "2201.5.5"
 keywords = ["choreo-apim-mediation-policy","choreo-apim-mediation-request-flow","choreo-apim-mediation-response-flow","choreo-apim-mediation-fault-flow"]
 visibility = "private"
 [build-options]
